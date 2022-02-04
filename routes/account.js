@@ -12,26 +12,32 @@ router.get('/:chain/:address', async function (req, res, next) {
 
   const options = { chain: chain, address: address };
   try {
-    const data = await Moralis.Web3API.account.getNFTs(options);
+    const nftData = await Moralis.Web3API.account.getNFTs(options);
 
-    res.json(await parseNFTData(data.result));
+    res.status(200).json(await enrichNFTData(nftData.result));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-async function parseNFTData(nftData) {
+async function enrichNFTData(nftData) {
   let returnValue = [];
-  nftData.forEach(async element => {
-    let nft = element;
-    if (!nft.metadata && nft.token_uri) {
-      nft.metadata = (await axios.get(nft.token_uri)).response;
-    }
-    try {
-      nft.metadata = JSON.parse(nft.metadata);
-    } catch (_) {}
-    returnValue.push(nft);
-  });
+
+  await Promise.all(
+    nftData.map(async element => {
+      let nft = element;
+      if (!nft.metadata && nft.token_uri) {
+        const response = await axios.get(nft.token_uri);
+        console.log(response.data);
+        nft.metadata = response.data;
+      }
+      try {
+        nft.metadata = JSON.parse(nft.metadata);
+      } catch (_) {}
+      returnValue.push(nft);
+    })
+  );
+
   return returnValue;
 }
 
