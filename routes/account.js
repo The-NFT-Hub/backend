@@ -21,24 +21,19 @@ router.get('/:chain/:address', async function (req, res, next) {
 });
 
 async function enrichNFTData(nftData) {
-  let returnValue = [];
-
   await Promise.all(
-    nftData.map(async element => {
-      let nft = element;
+    nftData.map(async nft => {
       if (!nft.metadata && nft.token_uri) {
         const response = await axios.get(nft.token_uri);
-        console.log(response.data);
         nft.metadata = response.data;
       }
       try {
         nft.metadata = JSON.parse(nft.metadata);
       } catch (_) {}
-      returnValue.push(nft);
     })
   );
 
-  return returnValue;
+  return nftData;
 }
 
 module.exports = router;
