@@ -1,19 +1,12 @@
+require('dotenv').config();
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-require('dotenv').config();
+const mongoose = require('mongoose');
 
-async function test() {
-  const options = { chain: 'bsc', block_number_or_hash: '2' };
-
-  // get block content on BSC
-
-  //console.log(await Moralis.Web3API.native.getBlock(options));
-}
-
-test();
+mongoose.connect(process.env.MONGO_URL);
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
