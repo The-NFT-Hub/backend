@@ -5,16 +5,18 @@ const axios = require('axios').default;
 
 /* GET users listing. */
 router.get('/:chain/:address', async function (req, res, next) {
-  const chain = req.params.chain;
+  const chain = req.params.chain.toLowerCase();
   const address = req.params.address;
 
   Moralis.start({ appId: process.env.MORALIS_APP_ID, serverUrl: process.env.MORALIS_SERVER_URL });
 
   const options = { chain: chain, address: address };
   try {
-    const nftData = await Moralis.Web3API.account.getNFTs(options);
+    let nftData = await Moralis.Web3API.account.getNFTs(options);
+    nftData = await enrichNFTData(nftData.result);
+    const responseData = {nfts: nftData, chain: chain, address: address};
 
-    res.status(200).json(await enrichNFTData(nftData.result));
+    res.status(200).json(responseData);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
