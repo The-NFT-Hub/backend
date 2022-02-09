@@ -41,16 +41,33 @@ async function enrichNFTData(nftData) {
   await Promise.all(
     nftData.map(async nft => {
       if (!nft.metadata && nft.token_uri) {
+        nft.token_uri = parseIPFSUrl(nft.token_uri);
         const response = await axios.get(nft.token_uri);
         nft.metadata = response.data;
       }
       try {
         nft.metadata = JSON.parse(nft.metadata);
       } catch (_) {}
+      if (nft.metadata && nft.metadata.image) {
+        nft.metadata.image = parseIPFSUrl(nft.metadata.image);
+        nft.metadata.animation_url = parseIPFSUrl(nft.metadata.animation_url);
+      }
     })
   );
 
   return nftData;
+}
+
+function parseIPFSUrl(url) {
+  if (!url) return url;
+  if (url.startsWith('ipfs://')) {
+    url = url.split('ipfs://')[1];
+    url = `https://cloudflare-ipfs.com/ipfs/${url}`;
+  } else if (url.startsWith('https://ipfs.io/ipfs/')) {
+    url = url.split('https://ipfs.io/ipfs/')[1];
+    url = `https://cloudflare-ipfs.com/ipfs/${url}`;
+  }
+  return url;
 }
 
 module.exports = router;
