@@ -53,6 +53,7 @@ async function enrichNFTData(nftData) {
           nft.metadata.image = parseIPFSUrl(nft.metadata.image);
           nft.metadata.animation_url = parseIPFSUrl(nft.metadata.animation_url);
         }
+        nft = makeAttributesArray(nft);
       } catch (error) {
         console.log(`Something went wrong while getting nft metadata`, error.message);
       }
@@ -64,6 +65,16 @@ async function enrichNFTData(nftData) {
   });
 
   return nftData;
+}
+
+function makeAttributesArray(nft) {
+  if (nft.metadata && nft.metadata.attributes) {
+    if (!Array.isArray(nft.metadata.attributes)) {
+      console.log('Making array');
+      nft.metadata.attributes = [nft.metadata.attributes];
+    }
+  }
+  return nft;
 }
 
 function parseIPFSUrl(url) {
