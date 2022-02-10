@@ -9,9 +9,7 @@ const NFTProfileSchema = new Schema(
     nfts: Object,
   },
   {
-    timestamps: {
-      currentTime: () => Math.floor(Date.now() / 1000),
-    },
+    timestamps: true,
   }
 );
 
