@@ -5,6 +5,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
+const databaseCleaner = require('./helpers/databaseCleaner');
 
 mongoose.connect(process.env.MONGO_URL);
 
@@ -13,6 +14,9 @@ const usersRouter = require('./routes/users');
 const accountRouter = require('./routes/account');
 
 const app = express();
+
+databaseCleaner();
+setInterval(databaseCleaner, 5 * 60 * 1000);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
