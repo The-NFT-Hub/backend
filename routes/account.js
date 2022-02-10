@@ -33,27 +33,35 @@ router.get('/:chain/:address', async function (req, res, next) {
 
     res.status(200).json(responseData);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: err });
   }
 });
 
 async function enrichNFTData(nftData) {
   await Promise.all(
     nftData.map(async nft => {
-      if (!nft.metadata && nft.token_uri) {
-        nft.token_uri = parseIPFSUrl(nft.token_uri);
-        const response = await axios.get(nft.token_uri);
-        nft.metadata = response.data;
-      }
       try {
-        nft.metadata = JSON.parse(nft.metadata);
-      } catch (_) {}
-      if (nft.metadata && nft.metadata.image) {
-        nft.metadata.image = parseIPFSUrl(nft.metadata.image);
-        nft.metadata.animation_url = parseIPFSUrl(nft.metadata.animation_url);
+        if (!nft.metadata && nft.token_uri) {
+          nft.token_uri = parseIPFSUrl(nft.token_uri);
+          const response = await axios.get(nft.token_uri);
+          nft.metadata = response.data;
+        }
+        try {
+          nft.metadata = JSON.parse(nft.metadata);
+        } catch (_) {}
+        if (nft.metadata && nft.metadata.image) {
+          nft.metadata.image = parseIPFSUrl(nft.metadata.image);
+          nft.metadata.animation_url = parseIPFSUrl(nft.metadata.animation_url);
+        }
+      } catch (error) {
+        console.log(`Something went wrong while getting nft metadata`, error.message);
       }
     })
   );
+
+  nftData = nftData.filter(function (nftObject) {
+    return nftObject.metadata != null;
+  });
 
   return nftData;
 }
