@@ -110,8 +110,24 @@ function makeAttributesArray(nft) {
       console.log('Making array');
       nft.metadata.attributes = [nft.metadata.attributes];
     }
+    if (!checkIfArrayIsObjectArray(nft.metadata.attributes)) {
+      nft.metadata.attributes = [];
+    }
   }
   return nft;
+}
+
+function checkIfArrayIsObjectArray(array) {
+  let isObjectArray = false;
+  if (array.length > 0) {
+    isObjectArray = true;
+    array.forEach(attribute => {
+      if (typeof attribute !== 'object') {
+        isObjectArray = false;
+      }
+    });
+  }
+  return isObjectArray;
 }
 
 module.exports = router;
