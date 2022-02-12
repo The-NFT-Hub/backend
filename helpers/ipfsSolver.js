@@ -10,7 +10,7 @@ function parseIPFSUrl(url) {
     url = url.split('/ipfs/')[1];
   }
   if (!url.startsWith('https://') && !url.startsWith('http://')) {
-    url = `https://cloudflare-ipfs.com/ipfs/${url}`;
+    url = `https://gateway.ipfs.io/ipfs/${url}`;
   }
   return url;
 }
