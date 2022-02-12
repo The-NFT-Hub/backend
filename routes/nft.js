@@ -57,7 +57,7 @@ function convertToMoralisObject(nft) {
     token_address: nft.token,
     token_id: nft.tokenId,
     block_number_minted: 'Unknown',
-    owner_of: nft.ownership.owner,
+    owner_of: nft.ownership?.owner ?? "Unknown",
     block_number: 'Unknown',
     amount: nft.totalStock.toString(),
     contract_type: 'Unknown',
