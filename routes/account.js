@@ -30,21 +30,21 @@ router.get('/:chain/:address', async function (req, res, next) {
   }
 });
 
-async function getProfileBanner(address) {
-  console.log('Getting profile banner');
+async function getProfileImages(address) {
+  console.log('Getting profile image');
   try {
     const profileData = await axios.post(`https://api-mainnet.rarible.com/marketplace/api/v4/profiles/list`, [address]);
-    return IpfsSolver(profileData.data[0].cover);
+    return { banner: IpfsSolver(profileData.data[0].cover), avatar: IpfsSolver(profileData.data[0].image) };
   } catch (e) {
     console.log(`Failed to get profile banner: ${e.message}`);
-    return null;
+    return { banner: null, avatar: null };
   }
 }
 
 async function fetchAccountInfo(address, chain) {
   const options = { chain: chain, address: address };
   const secondsSinceEpoch = Math.round(Date.now() / 1000);
-  const profileBanner = await getProfileBanner(address);
+  const profileImages = await getProfileImages(address);
 
   try {
     let nftData = await Moralis.Web3API.token.getAllTokenIds(options);
@@ -59,7 +59,8 @@ async function fetchAccountInfo(address, chain) {
       chain: chain,
       address: address.toLowerCase(),
       cachedAt: secondsSinceEpoch,
-      profileBanner: profileBanner,
+      profileBanner: profileImages.banner,
+      profileImage: profileImages.avatar,
     };
 
     await NFTProfileModel.updateOne({ chain: chain, address: address }, responseData, { upsert: true, setDefaultsOnInsert: true });
