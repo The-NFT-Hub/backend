@@ -16,11 +16,23 @@ router.get('/:chain/:address', async function (req, res, next) {
     { chain: chain, address: address.toLowerCase() },
     { __v: 0, _id: 0, createdAt: 0, updatedAt: 0 }
   );
+
   if (nftProfile && secondsSinceEpoch - nftProfile.cachedAt < 5 * 60) {
     return res.status(200).json(nftProfile);
   }
 
+  if (nftProfile) {
+    res.status(200).json(nftProfile);
+    fetchAccountInfo(address, chain);
+  } else {
+    const accountInfo = await fetchAccountInfo(address, chain);
+    res.status(accountInfo.status).json(accountInfo.data);
+  }
+});
+
+async function fetchAccountInfo(address, chain) {
   const options = { chain: chain, address: address };
+  const secondsSinceEpoch = Math.round(Date.now() / 1000);
 
   try {
     let nftData = await Moralis.Web3API.token.getAllTokenIds(options);
@@ -36,11 +48,11 @@ router.get('/:chain/:address', async function (req, res, next) {
 
     responseData.cached = false;
 
-    res.status(200).json(responseData);
+    return { status: 200, data: responseData };
   } catch (err) {
-    res.status(500).json({ message: err });
+    return { status: 500, data: { message: err } };
   }
-});
+}
 
 async function enrichNFTData(nftData, chain) {
   await Promise.all(
