@@ -7,6 +7,7 @@ const NFTProfileSchema = new Schema(
     chain: String,
     address: String,
     nfts: Object,
+    profileBanner: String,
   },
   {
     timestamps: true,
