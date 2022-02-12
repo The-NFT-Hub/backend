@@ -56,8 +56,22 @@ function convertNFTListToMoralis(nfts) {
   return returnValue;
 }
 
+function convertBlockhainToAppChain(chain) {
+  switch (chain.toUpperCase()) {
+    case 'ETHEREUM':
+      return 'eth';
+    case 'POLYGON':
+      return 'polygon';
+    case 'FANTOM':
+      return 'fantom';
+    default:
+      return 'eth';
+  }
+}
+
 function convertToMoralisObject(nft) {
   return {
+    chain: convertBlockhainToAppChain(nft.blockchain),
     token_address: nft.token,
     token_id: nft.tokenId,
     block_number_minted: 'Unknown',

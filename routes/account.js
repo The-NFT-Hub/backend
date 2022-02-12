@@ -28,7 +28,7 @@ router.get('/:chain/:address', async function (req, res, next) {
       console.log('Getting data by account');
       nftData = await Moralis.Web3API.account.getNFTs(options);
     }
-    nftData = await enrichNFTData(nftData.result);
+    nftData = await enrichNFTData(nftData.result, chain);
 
     let responseData = { nfts: nftData, chain: chain, address: address.toLowerCase(), cachedAt: secondsSinceEpoch };
 
@@ -42,9 +42,10 @@ router.get('/:chain/:address', async function (req, res, next) {
   }
 });
 
-async function enrichNFTData(nftData) {
+async function enrichNFTData(nftData, chain) {
   await Promise.all(
     nftData.map(async nft => {
+      nft.chain = chain;
       try {
         if (!nft.metadata && nft.token_uri) {
           nft.token_uri = IpfsSolver(nft.token_uri);
