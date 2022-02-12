@@ -3,6 +3,7 @@ const router = express.Router();
 const Moralis = require('moralis/node');
 const axios = require('axios').default;
 const NFTProfileModel = require('../models/NFTProfileModel');
+const IpfsSolver = require('../helpers/ipfsSolver');
 Moralis.start({ appId: process.env.MORALIS_APP_ID, serverUrl: process.env.MORALIS_SERVER_URL });
 
 /* GET users listing. */
@@ -42,7 +43,7 @@ async function enrichNFTData(nftData) {
     nftData.map(async nft => {
       try {
         if (!nft.metadata && nft.token_uri) {
-          nft.token_uri = parseIPFSUrl(nft.token_uri);
+          nft.token_uri = IpfsSolver(nft.token_uri);
           const response = await axios.get(nft.token_uri);
           nft.metadata = response.data;
         }
@@ -50,8 +51,8 @@ async function enrichNFTData(nftData) {
           nft.metadata = JSON.parse(nft.metadata);
         } catch (_) {}
         if (nft.metadata && nft.metadata.image) {
-          nft.metadata.image = parseIPFSUrl(nft.metadata.image);
-          nft.metadata.animation_url = parseIPFSUrl(nft.metadata.animation_url);
+          nft.metadata.image = IpfsSolver(nft.metadata.image);
+          nft.metadata.animation_url = IpfsSolver(nft.metadata.animation_url);
         }
         nft = makeAttributesArray(nft);
       } catch (error) {
@@ -75,18 +76,6 @@ function makeAttributesArray(nft) {
     }
   }
   return nft;
-}
-
-function parseIPFSUrl(url) {
-  if (!url) return url;
-  if (url.startsWith('ipfs://')) {
-    url = url.split('ipfs://')[1];
-    url = `https://cloudflare-ipfs.com/ipfs/${url}`;
-  } else if (url.startsWith('https://ipfs.io/ipfs/')) {
-    url = url.split('https://ipfs.io/ipfs/')[1];
-    url = `https://cloudflare-ipfs.com/ipfs/${url}`;
-  }
-  return url;
 }
 
 module.exports = router;
