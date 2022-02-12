@@ -36,6 +36,7 @@ async function getProfileBanner(address) {
     const profileData = await axios.post(`https://api-mainnet.rarible.com/marketplace/api/v4/profiles/list`, [address]);
     return IpfsSolver(profileData.data[0].cover);
   } catch (e) {
+    console.log(`Failed to get profile banner: ${e.message}`);
     return null;
   }
 }
