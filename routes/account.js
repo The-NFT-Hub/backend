@@ -24,6 +24,10 @@ router.get('/:chain/:address', async function (req, res, next) {
 
   try {
     let nftData = await Moralis.Web3API.account.getNFTs(options);
+    if (nftData.result.length == 0) {
+      console.log('Getting data by tokenID');
+      nftData = await Moralis.Web3API.token.getAllTokenIds(options);
+    }
     nftData = await enrichNFTData(nftData.result);
 
     let responseData = { nfts: nftData, chain: chain, address: address.toLowerCase(), cachedAt: secondsSinceEpoch };
