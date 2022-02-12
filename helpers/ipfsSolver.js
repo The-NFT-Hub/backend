@@ -1,5 +1,5 @@
 function parseIPFSUrl(url) {
-  if (!url || url.startsWith('https://') || url.startsWith('http://')) return url;
+  if (!url) return url;
 
   if (url.startsWith('ipfs://')) {
     url = url.split('ipfs://')[1];
@@ -9,7 +9,9 @@ function parseIPFSUrl(url) {
   if (url.startsWith('/ipfs/')) {
     url = url.split('/ipfs/')[1];
   }
-  url = `https://cloudflare-ipfs.com/ipfs/${url}`;
+  if (!url.startsWith('https://') && !url.startsWith('http://')) {
+    url = `https://cloudflare-ipfs.com/ipfs/${url}`;
+  }
   return url;
 }
 
