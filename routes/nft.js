@@ -5,8 +5,12 @@ const IpfsSolver = require('../helpers/ipfsSolver');
 
 /* Explore NFTs */
 router.get('/explore', async function (req, res, next) {
-  const nfts = await getExploreNFTIds();
-  res.status(200).json(nfts);
+  try {
+    const nfts = await getExploreNFTIds();
+    res.status(200).json(nfts);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 async function getExploreNFTIds() {
@@ -57,7 +61,7 @@ function convertToMoralisObject(nft) {
     token_address: nft.token,
     token_id: nft.tokenId,
     block_number_minted: 'Unknown',
-    owner_of: nft.ownership?.owner ?? "Unknown",
+    owner_of: nft.ownership?.owner ?? 'Unknown',
     block_number: 'Unknown',
     amount: nft.totalStock.toString(),
     contract_type: 'Unknown',
