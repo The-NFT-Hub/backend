@@ -16,7 +16,7 @@ router.get('/explore', async function (req, res, next) {
 
 async function getExploreNFTIds() {
   const secondsSinceEpoch = Math.round(Date.now() / 1000);
-  const nftData = (await NFTExplore.find({}, { _id: 0, __v: 0 }))[0];
+  const nftData = (await NFTExplore.find({}))[0];
   if (nftData && secondsSinceEpoch - nftData.cachedAt < 1 * 60) {
     nftData.cached = true;
     return nftData;
