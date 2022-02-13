@@ -23,12 +23,18 @@ async function getExploreNFTIds() {
       currency: '0x0000000000000000000000000000000000000000',
       hideItemsSupply: 'HIDE_LAZY_SUPPLY',
       nsfw: false,
+      blockchains: ['ETHEREUM'],
     },
   });
 
   const nftData = await axios.post('https://api-mainnet.rarible.com/marketplace/api/v4/items/byIds', getNFTIdArray(ids.data));
 
-  return { nfts: convertNFTListToMoralis(nftData.data) };
+  let nfts = convertNFTListToMoralis(nftData.data);
+  nfts = nfts.filter(function (nftObject) {
+    return nftObject.metadata != null && nftObject.metadata.image != null;
+  });
+
+  return { nfts: nfts };
 }
 
 function getNFTIdArray(nftData) {
@@ -56,6 +62,18 @@ function convertNFTListToMoralis(nfts) {
   return returnValue;
 }
 
+function tryRemoveTokenID(nftName) {
+  if (!nftName || nftName.length == 0) return nftName;
+  try {
+    if (nftName.includes('#')) {
+      nftName = nftName.split('#')[0].trim();
+    }
+    nftName = nftName.split(/(\d+)/)[0].trim();
+  } catch (e) {}
+
+  return nftName;
+}
+
 function convertBlockhainToAppChain(chain) {
   switch (chain.toUpperCase()) {
     case 'ETHEREUM':
@@ -79,7 +97,7 @@ function convertToMoralisObject(nft) {
     block_number: 'Unknown',
     amount: nft.totalStock.toString(),
     contract_type: 'Unknown',
-    name: nft.properties.name,
+    name: tryRemoveTokenID(nft.properties.name),
     symbol: 'Unknown',
     token_uri: 'Unknown',
     metadata: {
