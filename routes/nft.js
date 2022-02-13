@@ -51,7 +51,7 @@ async function fetchAndSave() {
 
 async function getExploreNFTIdsFromRarible() {
   const ids = await axios.post('https://api-mainnet.rarible.com/marketplace/search/v1/items', {
-    size: 150,
+    size: 300,
     filter: {
       verifiedOnly: true,
       sort: 'LATEST',
