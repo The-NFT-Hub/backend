@@ -18,7 +18,7 @@ async function getHotCollections() {
   nfts.data.forEach(nft => {
     moralisObjects.push(convertToMoralisObject(nft));
   });
-  return moralisObjects;
+  return { nfts: moralisObjects };
 }
 
 function convertToMoralisObject(nft) {
