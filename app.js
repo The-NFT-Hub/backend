@@ -13,6 +13,7 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const accountRouter = require('./routes/account');
 const nftRouter = require('./routes/nft');
+const collectionRouter = require('./routes/collection');
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/account', accountRouter);
 app.use('/nft', nftRouter);
+app.use('/collection', collectionRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
