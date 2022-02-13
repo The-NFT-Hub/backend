@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios').default;
 const IpfsSolver = require('../helpers/ipfsSolver');
+const NFTExplore = require('../models/NFTExploreModel');
 
 /* Explore NFTs */
 router.get('/explore', async function (req, res, next) {
@@ -14,8 +15,43 @@ router.get('/explore', async function (req, res, next) {
 });
 
 async function getExploreNFTIds() {
+  const secondsSinceEpoch = Math.round(Date.now() / 1000);
+  const nftData = (await NFTExplore.find({}, { _id: 0, __v: 0 }))[0];
+  if (nftData && secondsSinceEpoch - nftData.cachedAt < 1 * 60) {
+    nftData.cached = true;
+    return nftData;
+  }
+  if (nftData) {
+    nftData.cached = true;
+    //Updating cacheAt, to prevent multiple updates because of slow API..
+
+    nftData.cachedAt = secondsSinceEpoch;
+    nftData.save();
+    fetchAndSave();
+    return nftData;
+  }
+
+  return await fetchAndSave();
+}
+
+async function fetchAndSave() {
+  console.log('Saving explore NFTs');
+  const raribleData = await getExploreNFTIdsFromRarible();
+  await NFTExplore.deleteMany({});
+
+  const nftExplore = new NFTExplore();
+  nftExplore.nfts = raribleData.nfts;
+  nftExplore.cachedAt = Math.round(Date.now() / 1000);
+  nftExplore.save();
+
+  nftExplore.cached = false;
+  console.log('Saved explore NFTs');
+  return raribleData;
+}
+
+async function getExploreNFTIdsFromRarible() {
   const ids = await axios.post('https://api-mainnet.rarible.com/marketplace/search/v1/items', {
-    size: 50,
+    size: 150,
     filter: {
       verifiedOnly: true,
       sort: 'LATEST',
