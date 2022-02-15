@@ -8,8 +8,8 @@ const cache = new NodeCache({ stdTTL: 60 * 1 });
 
 /* Explore NFTs */
 router.get('/explore', async function (req, res, next) {
-  if (cache.get(req.originalUrl)) {
-    console.log('Cached');
+  if (await cache.get(req.originalUrl)) {
+    console.log('Cached nft explore');
     return res.status(200).json(cache.get(req.originalUrl));
   }
 
@@ -58,6 +58,7 @@ async function fetchAndSave() {
 }
 
 async function getExploreNFTIdsFromRarible() {
+  console.log('Fetching explore nft data from rarible');
   const ids = await axios.post('https://api-mainnet.rarible.com/marketplace/search/v1/items', {
     size: 300,
     filter: {
