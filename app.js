@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
 const databaseCleaner = require('./helpers/databaseCleaner');
+const NodeCache = require('node-cache');
 
 mongoose.connect(process.env.MONGO_URL);
 
@@ -16,6 +17,8 @@ const nftRouter = require('./routes/nft');
 const collectionRouter = require('./routes/collection');
 
 const app = express();
+//TTL in seconds
+const cache = new NodeCache({ stdTTL: 60 * 1 });
 
 databaseCleaner();
 setInterval(databaseCleaner, 5 * 60 * 1000);
