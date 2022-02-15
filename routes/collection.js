@@ -2,10 +2,18 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios').default;
 const IpfsSolver = require('../helpers/ipfsSolver');
+const consts = require('../consts.json');
+const NodeCache = require('node-cache');
+const cache = new NodeCache({ stdTTL: consts.Cache.Cache_TTL });
 
 router.get('/hot', async function (req, res, next) {
+  if (await cache.get(req.originalUrl.toLowerCase())) {
+    console.log('Cached collection');
+    return res.status(200).json(cache.get(req.originalUrl.toLowerCase()));
+  }
   try {
     const nfts = await getHotCollections();
+    cache.set(req.originalUrl.toLowerCase(), nfts, consts.Cache.Cache_TTL);
     res.status(200).json(nfts);
   } catch (err) {
     res.status(500).json({ message: err.message });

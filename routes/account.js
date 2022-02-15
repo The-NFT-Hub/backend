@@ -4,6 +4,9 @@ const Moralis = require('moralis/node');
 const axios = require('axios').default;
 const NFTProfileModel = require('../models/NFTProfileModel');
 const IpfsSolver = require('../helpers/ipfsSolver');
+const consts = require('../consts.json');
+const NodeCache = require('node-cache');
+const cache = new NodeCache({ stdTTL: consts.Cache.Cache_TTL });
 Moralis.start({ appId: process.env.MORALIS_APP_ID, serverUrl: process.env.MORALIS_SERVER_URL });
 
 /* GET users listing. */
@@ -12,12 +15,18 @@ router.get('/:chain/:address', async function (req, res, next) {
   const address = req.params.address;
   const secondsSinceEpoch = Math.round(Date.now() / 1000);
 
+  if (await cache.get(req.originalUrl.toLowerCase())) {
+    console.log('Cached account', chain, address);
+    return res.status(200).json(cache.get(req.originalUrl.toLowerCase()));
+  }
+
   const nftProfile = await NFTProfileModel.findOne(
     { chain: chain, address: address.toLowerCase() },
     { __v: 0, _id: 0, createdAt: 0, updatedAt: 0 }
   );
 
   if (nftProfile && secondsSinceEpoch - nftProfile.cachedAt < 5 * 60) {
+    cache.set(req.originalUrl, nftProfile, consts.Cache.Cache_TTL);
     return res.status(200).json(nftProfile);
   }
 
@@ -26,6 +35,7 @@ router.get('/:chain/:address', async function (req, res, next) {
     fetchAccountInfo(address, chain);
   } else {
     const accountInfo = await fetchAccountInfo(address, chain);
+    cache.set(req.originalUrl.toLowerCase(), accountInfo.data, consts.Cache.Cache_TTL);
     res.status(accountInfo.status).json(accountInfo.data);
   }
 });
