@@ -9,12 +9,13 @@ const cache = new NodeCache({ stdTTL: 60 * 1 });
 /* Explore NFTs */
 router.get('/explore', async function (req, res, next) {
   if (cache.get(req.originalUrl)) {
+    console.log('Cached');
     return res.status(200).json(cache.get(req.originalUrl));
   }
 
   try {
     const nfts = await getExploreNFTIds();
-    cache.set(req.originalUrl, nfts);
+    cache.set(req.originalUrl, nfts, 60 * 1);
     res.status(200).json(nfts);
   } catch (err) {
     res.status(500).json({ message: err.message });
