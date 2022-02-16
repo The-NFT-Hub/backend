@@ -110,13 +110,16 @@ function convertNFTListToMoralis(nfts) {
 
 function tryRemoveTokenID(nftName) {
   if (!nftName || nftName.length == 0) return nftName;
+  const oldNftName = nftName;
   try {
     if (nftName.includes('#')) {
       nftName = nftName.split('#')[0].trim();
     }
     nftName = nftName.split(/(\d+)/)[0].trim();
   } catch (e) {}
-
+  if (nftName.trim().length == 0 || nftName.trim().startsWith('#')) {
+    nftName = oldNftName;
+  }
   return nftName;
 }
 
