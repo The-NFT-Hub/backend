@@ -100,6 +100,7 @@ async function enrichNFTData(nftData, chain) {
           nft.metadata.image = IpfsSolver(nft.metadata.image);
           nft.metadata.animation_url = IpfsSolver(nft.metadata.animation_url);
         }
+        nft = fixNFTMetadataName(nft);
         nft = makeAttributesArray(nft);
       } catch (error) {
         console.log(`Something went wrong while getting nft metadata`, error.message);
@@ -112,6 +113,21 @@ async function enrichNFTData(nftData, chain) {
   });
 
   return nftData;
+}
+
+function fixNFTMetadataName(nft) {
+  if (nft.metadata && !nft.metadata.name) {
+    nft.metadata.name = nft.name;
+    if (!nft.metadata.name.includes('#')) {
+      nft.metadata.name = `${nft.metadata.name} #${nft.metadata.edition}`;
+    }
+  }
+  if (nft.metadata && nft.metadata.name && nft.name) {
+    if (nft.metadata.name.startsWith('#')) {
+      nft.metadata.name = `${nft.name} ${nft.metadata.name}`.trim();
+    }
+  }
+  return nft;
 }
 
 function makeAttributesArray(nft) {
