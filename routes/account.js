@@ -109,7 +109,7 @@ async function enrichNFTData(nftData, chain) {
   );
 
   nftData = nftData.filter(function (nftObject) {
-    return nftObject.metadata != null;
+    return nftObject.metadata != null && !Array.isArray(nftObject.metadata);
   });
 
   return nftData;
