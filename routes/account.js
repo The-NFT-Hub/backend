@@ -119,7 +119,7 @@ function fixNFTMetadataName(nft) {
   if (nft.metadata && !nft.metadata.name) {
     nft.metadata.name = nft.name;
     if (!nft.metadata.name.includes('#')) {
-      nft.metadata.name = `${nft.metadata.name} #${nft.metadata.edition}`;
+      nft.metadata.name = `${nft.metadata.name} #${nft.metadata.edition ?? nft.token_id}`;
     }
   }
   if (nft.metadata && nft.metadata.name && nft.name) {
