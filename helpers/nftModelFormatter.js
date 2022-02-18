@@ -1,4 +1,7 @@
 function fixCollectionName(nft) {
+  if (typeof nft.name == 'object' && nft.metadata) {
+    nft.name = nft.metadata.name;
+  }
   if (!nft.name && nft.metadata) {
     if (nft.metadata.collection) {
       nft.name = nft.metadata.collection;
