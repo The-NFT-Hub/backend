@@ -6,6 +6,7 @@ const NFTExplore = require('../models/NFTExploreModel');
 const consts = require('../consts.json');
 const NodeCache = require('node-cache');
 const cache = new NodeCache({ stdTTL: consts.Cache.Cache_TTL });
+const nftModelFormatter = require('../helpers/nftModelFormatter');
 
 /* Explore NFTs */
 router.get('/explore', async function (req, res, next) {
@@ -22,6 +23,39 @@ router.get('/explore', async function (req, res, next) {
     res.status(500).json({ message: err.message });
   }
 });
+
+router.get('/:chain/:address/:id', async function (req, res, next) {
+  const chain = req.params.chain;
+  const address = req.params.address;
+  const id = req.params.id;
+  const nftData = await getNFTData(chain, address, id);
+  if (nftData) {
+    res.status(200).json(nftData);
+  } else {
+    res.status(404).json({ message: 'NFT not found' });
+  }
+});
+
+async function getNFTData(chain, address, id) {
+  let data = await axios.get(`https://deep-index.moralis.io/api/v2/nft/${address}/${id}?chain=${chain}&format=decimal`, {
+    headers: {
+      accept: 'application/json',
+      'X-API-KEY': process.env.MORALIS_WEB_API_KEY,
+    },
+  });
+  data = data.data;
+  try {
+    data.metadata = JSON.parse(data.metadata);
+    if (data.metadata) {
+      data.metadata.animation_url = IpfsSolver(data.metadata.animation_url);
+      data.metadata.image = IpfsSolver(data.metadata.image);
+    }
+    data = nftModelFormatter.fixCollectionName(data);
+    data = nftModelFormatter.fixNFTMetadataName(data);
+    data = nftModelFormatter.makeAttributesArray(data);
+  } catch (e) {}
+  return data;
+}
 
 async function getExploreNFTIds() {
   const secondsSinceEpoch = Math.round(Date.now() / 1000);

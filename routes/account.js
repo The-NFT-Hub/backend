@@ -7,6 +7,7 @@ const IpfsSolver = require('../helpers/ipfsSolver');
 const consts = require('../consts.json');
 const NodeCache = require('node-cache');
 const cache = new NodeCache({ stdTTL: consts.Cache.Cache_TTL });
+const nftModelFormatter = require('../helpers/nftModelFormatter');
 Moralis.start({ appId: process.env.MORALIS_APP_ID, serverUrl: process.env.MORALIS_SERVER_URL });
 
 /* GET users listing. */
@@ -100,9 +101,9 @@ async function enrichNFTData(nftData, chain) {
           nft.metadata.image = IpfsSolver(nft.metadata.image);
           nft.metadata.animation_url = IpfsSolver(nft.metadata.animation_url);
         }
-        nft = fixCollectionName(nft);
-        nft = fixNFTMetadataName(nft);
-        nft = makeAttributesArray(nft);
+        nft = nftModelFormatter.fixCollectionName(nft);
+        nft = nftModelFormatter.fixNFTMetadataName(nft);
+        nft = nftModelFormatter.makeAttributesArray(nft);
       } catch (error) {
         console.log(`Something went wrong while getting nft metadata`, error.message);
       }
@@ -114,61 +115,6 @@ async function enrichNFTData(nftData, chain) {
   });
 
   return nftData;
-}
-
-function fixCollectionName(nft) {
-  if (!nft.name && nft.metadata) {
-    if (nft.metadata.collection) {
-      nft.name = nft.metadata.collection;
-    } else if (nft.metadata.name) {
-      nft.name = nft.metadata.name;
-      if (nft.name.includes('#')) {
-        nft.name = nft.name.split('#')[0];
-      }
-    }
-  }
-  return nft;
-}
-
-function fixNFTMetadataName(nft) {
-  if (nft.metadata && !nft.metadata.name) {
-    nft.metadata.name = nft.name;
-    if (!nft.metadata.name.includes('#')) {
-      nft.metadata.name = `${nft.metadata.name} #${nft.metadata.edition ?? nft.token_id}`;
-    }
-  }
-  if (nft.metadata && nft.metadata.name && nft.name) {
-    if (nft.metadata.name.startsWith('#')) {
-      nft.metadata.name = `${nft.name} ${nft.metadata.name}`.trim();
-    }
-  }
-  return nft;
-}
-
-function makeAttributesArray(nft) {
-  if (nft.metadata && nft.metadata.attributes) {
-    if (!Array.isArray(nft.metadata.attributes)) {
-      console.log('Making array');
-      nft.metadata.attributes = [nft.metadata.attributes];
-    }
-    if (!checkIfArrayIsObjectArray(nft.metadata.attributes)) {
-      nft.metadata.attributes = [];
-    }
-  }
-  return nft;
-}
-
-function checkIfArrayIsObjectArray(array) {
-  let isObjectArray = false;
-  if (array.length > 0) {
-    isObjectArray = true;
-    array.forEach(attribute => {
-      if (typeof attribute !== 'object') {
-        isObjectArray = false;
-      }
-    });
-  }
-  return isObjectArray;
 }
 
 module.exports = router;
