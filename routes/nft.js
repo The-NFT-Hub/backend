@@ -28,11 +28,22 @@ router.get('/:chain/:address/:id', async function (req, res, next) {
   const chain = req.params.chain;
   const address = req.params.address;
   const id = req.params.id;
-  const nftData = await getNFTData(chain, address, id);
-  if (nftData) {
-    res.status(200).json(nftData);
-  } else {
-    res.status(404).json({ message: 'NFT not found' });
+
+  if (await cache.get(req.originalUrl.toLowerCase())) {
+    console.log('Cached nft details');
+    return res.status(200).json(cache.get(req.originalUrl.toLowerCase()));
+  }
+  try {
+    const nftData = await getNFTData(chain, address, id);
+    cache.set(req.originalUrl.toLowerCase(), nftData, consts.Cache.Cache_TTL);
+
+    if (nftData) {
+      res.status(200).json(nftData);
+    } else {
+      res.status(404).json({ message: 'NFT not found' });
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
