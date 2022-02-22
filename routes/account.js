@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Moralis = require('moralis/node');
+const moralisAPI = require('../helpers/moralisAPI');
 const axios = require('axios').default;
 const NFTProfileModel = require('../models/NFTProfileModel');
 const IpfsSolver = require('../helpers/ipfsSolver');
@@ -8,7 +8,6 @@ const consts = require('../consts.json');
 const NodeCache = require('node-cache');
 const cache = new NodeCache({ stdTTL: consts.Cache.Cache_TTL });
 const nftModelFormatter = require('../helpers/nftModelFormatter');
-Moralis.start({ appId: process.env.MORALIS_APP_ID, serverUrl: process.env.MORALIS_SERVER_URL });
 
 /* GET users listing. */
 router.get('/:chain/:address', async function (req, res, next) {
@@ -53,15 +52,14 @@ async function getProfileImages(address) {
 }
 
 async function fetchAccountInfo(address, chain) {
-  const options = { chain: chain, address: address };
   const secondsSinceEpoch = Math.round(Date.now() / 1000);
   const profileImages = await getProfileImages(address);
 
   try {
-    let nftData = await Moralis.Web3API.token.getAllTokenIds(options);
+    let nftData = await moralisAPI.getNFTsByContract(address, chain);
     if (nftData.result.length == 0) {
       console.log('Getting data by account');
-      nftData = await Moralis.Web3API.account.getNFTs(options);
+      nftData = await moralisAPI.getNFTsByAccount(address, chain);
     }
     nftData = await enrichNFTData(nftData.result, chain);
 
