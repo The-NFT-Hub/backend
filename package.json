@@ -16,7 +16,7 @@
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
     "mongoose": "^6.2.1",
-    "moralis": "^1.2.4",
+    "moralis": "^1.2.6",
     "morgan": "~1.9.1",
     "node-cache": "^5.1.2"
   },
